@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --mesh-a: rgba(15, 118, 110, 0.14);
+  --mesh-b: rgba(15, 23, 42, 0.05);
+}
+
+/* Base was browser 16px — +2px so rem-based Tailwind text scales up. */
+html {
+  font-size: 18px;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 480px at 0% 0%, var(--mesh-a), transparent 55%),
+    radial-gradient(700px 420px at 100% 8%, rgba(8, 145, 178, 0.1), transparent 50%),
+    linear-gradient(165deg, #f3f6fa 0%, #eef2f7 45%, #f7f8fb 100%);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white shadow-sm hover:bg-accent-dark hover:shadow-md;
+  }
+  .btn-secondary {
+    @apply btn bg-white/90 text-ink-800 border border-ink-200 hover:border-accent/40 hover:bg-white hover:text-accent-dark;
+  }
+  .btn-danger {
+    @apply btn bg-danger text-white hover:bg-red-800;
+  }
+  .input {
+    @apply w-full rounded-xl border border-ink-200 bg-white/90 px-3 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/15;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-500;
+  }
+  .card {
+    @apply rounded-2xl border border-ink-200/70 bg-white/85 shadow-panel backdrop-blur-sm transition duration-300;
+  }
+  .card-interactive {
+    @apply card cursor-pointer hover:-translate-y-0.5 hover:border-accent/35;
+  }
+  .card-interactive:hover {
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
+  }
+  .table-wrap {
+    @apply overflow-x-auto rounded-2xl border border-ink-200/80 bg-white/90 shadow-panel;
+  }
+  .page-enter {
+    animation: rise-in 0.45s ease-out both;
+  }
+  .stagger-1 {
+    animation-delay: 0.04s;
+  }
+  .stagger-2 {
+    animation-delay: 0.08s;
+  }
+  .stagger-3 {
+    animation-delay: 0.12s;
+  }
+  .stagger-4 {
+    animation-delay: 0.16s;
+  }
+  .stagger-5 {
+    animation-delay: 0.2s;
+  }
+  .stagger-6 {
+    animation-delay: 0.24s;
+  }
+  .stagger-7 {
+    animation-delay: 0.28s;
+  }
+}
