@@ -20,7 +20,6 @@ export default function Login() {
   const [error, setError] = useState("");
   const [providers, setProviders] = useState([]);
   const [ssoBusy, setSsoBusy] = useState("");
-console.log("providers",providers);
   const homePath = user?.role === "subscriber" ? "/profile" : "/";
   const busy = loading || Boolean(ssoBusy);
 

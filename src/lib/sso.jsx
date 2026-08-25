@@ -63,7 +63,26 @@ export function startAdminSso(provider, { intent = "login", acceptTerms = false 
   if (intent === "signup") {
     params.set("acceptTerms", acceptTerms ? "1" : "0");
   }
-  window.location.href = `/api/admin/auth/oauth/${provider}/start?${params.toString()}`;
+
+  // Yahoo cannot use http:// callbacks. Start OAuth on the HTTPS hub so
+  // authorize state is signed+verified on the same host (Vercel).
+  const hubBase = String(import.meta.env.VITE_OAUTH_HUB_URL || "").replace(
+    /\/$/,
+    "",
+  );
+  const isLocalAdmin =
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(returnOrigin);
+
+  let apiBase = "";
+  if (provider === "yahoo" && hubBase) {
+    apiBase = hubBase;
+  } else if (!isLocalAdmin) {
+    apiBase = String(
+      import.meta.env.VITE_OAUTH_HUB_URL || import.meta.env.VITE_API_URL || "",
+    ).replace(/\/$/, "");
+  }
+
+  window.location.href = `${apiBase}/api/admin/auth/oauth/${provider}/start?${params.toString()}`;
 }
 
 export function TermsCheckbox({ checked, onChange, id = "accept-terms" }) {
