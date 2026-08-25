@@ -1,9 +1,18 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "";
+function resolveApiBase() {
+  const env = String(import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+  if (typeof window === "undefined") return env;
+  const origin = window.location.origin;
+  const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+  // Live admin and API are different vercel.app sites; cookies will not stick
+  // cross-site. Call same-origin /api (proxied by Vercel / Vite).
+  if (!isLocal) return "";
+  return env;
+}
 
 export const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: resolveApiBase(),
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });

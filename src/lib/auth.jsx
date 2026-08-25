@@ -94,7 +94,6 @@ export function AuthProvider({ children }) {
       setUser(data.user);
       setSettings(data.settings || null);
       setSession(data.session || null);
-      await refreshMe().catch(() => {});
       return data;
     } finally {
       setLoading(false);

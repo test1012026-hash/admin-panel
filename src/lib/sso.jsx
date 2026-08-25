@@ -74,12 +74,9 @@ export function startAdminSso(provider, { intent = "login", acceptTerms = false 
     /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(returnOrigin);
 
   let apiBase = "";
-  if (provider === "yahoo" && hubBase) {
+  if (provider === "yahoo" && hubBase && isLocalAdmin) {
+    // Yahoo rejects http:// callbacks; local admin still starts on the HTTPS API.
     apiBase = hubBase;
-  } else if (!isLocalAdmin) {
-    apiBase = String(
-      import.meta.env.VITE_OAUTH_HUB_URL || import.meta.env.VITE_API_URL || "",
-    ).replace(/\/$/, "");
   }
 
   window.location.href = `${apiBase}/api/admin/auth/oauth/${provider}/start?${params.toString()}`;
