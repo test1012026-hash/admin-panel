@@ -5,6 +5,9 @@
       "source": "/api/:path*",
       "destination": "https://server-nine-rosy.vercel.app/api/:path*"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/((?!downloads/).*)",
+      "destination": "/index.html"
+    }
   ]
 }

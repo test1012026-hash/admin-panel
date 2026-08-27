@@ -172,8 +172,44 @@ export default function Profile() {
         ) : null}
       </section>
 
+      <section className="card space-y-3 p-5 stagger-2 page-enter">
+        <h2 className="font-display text-lg font-semibold">
+          Outlook add-in
+        </h2>
+        <p className="text-sm text-ink-600">
+          Download the SecureDoc Outlook add-in package. Install{" "}
+          <span className="font-medium text-ink-800">
+            manifest.encryption.xml
+          </span>{" "}
+          via Outlook sideload.
+        </p>
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-600">
+          <li>
+            Open{" "}
+            <a
+              href="https://aka.ms/olksideload"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent hover:underline"
+            >
+              aka.ms/olksideload
+            </a>
+          </li>
+          <li>My add-ins → Add a custom add-in → Add from file</li>
+          <li>Upload manifest.encryption.xml from the zip</li>
+          <li>Refresh Outlook, then sign in from the SecureDoc pane</li>
+        </ol>
+        <a
+          href="/downloads/SecureDoc-outlook-addin.zip"
+          download="SecureDoc-outlook-addin.zip"
+          className="btn-primary inline-flex items-center justify-center"
+        >
+          Download Outlook add-in (.zip)
+        </a>
+      </section>
+
       <form
-        className="card space-y-3 p-5 stagger-2 page-enter"
+        className="card space-y-3 p-5 stagger-3 page-enter"
         onSubmit={saveProfile}
       >
         <h2 className="font-display text-lg font-semibold">Basic details</h2>
@@ -206,7 +242,7 @@ export default function Profile() {
       </form>
 
       <form
-        className="card space-y-3 p-5 stagger-3 page-enter"
+        className="card space-y-3 p-5 stagger-4 page-enter"
       >
      
 
