@@ -208,8 +208,40 @@ export default function Profile() {
         </a>
       </section>
 
+      <section className="card space-y-3 p-5 stagger-3 page-enter">
+        <h2 className="font-display text-lg font-semibold">
+          Chrome extension
+        </h2>
+        <p className="text-sm text-ink-600">
+          Download the SecureDoc Chrome extension package. Load the unzipped
+          folder as an unpacked extension in Chrome.
+        </p>
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-600">
+          <li>Download and unzip the package to a folder on your computer</li>
+          <li>
+            Open{" "}
+            <a
+              href="chrome://extensions"
+              className="font-medium text-accent hover:underline"
+            >
+              chrome://extensions
+            </a>
+          </li>
+          <li>Turn on Developer mode (top right)</li>
+          <li>Click Load unpacked and select the unzipped folder</li>
+          <li>Open the SecureDoc icon in Chrome and sign in</li>
+        </ol>
+        <a
+          href="/downloads/SecureDoc-chrome-extension.zip"
+          download="SecureDoc-chrome-extension.zip"
+          className="btn-primary inline-flex items-center justify-center"
+        >
+          Download Chrome extension (.zip)
+        </a>
+      </section>
+
       <form
-        className="card space-y-3 p-5 stagger-3 page-enter"
+        className="card space-y-3 p-5 stagger-4 page-enter"
         onSubmit={saveProfile}
       >
         <h2 className="font-display text-lg font-semibold">Basic details</h2>
@@ -242,7 +274,7 @@ export default function Profile() {
       </form>
 
       <form
-        className="card space-y-3 p-5 stagger-4 page-enter"
+        className="card space-y-3 p-5 stagger-5 page-enter"
       >
      
 
