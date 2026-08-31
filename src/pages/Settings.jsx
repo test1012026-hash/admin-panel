@@ -78,7 +78,7 @@ export default function Settings() {
           />
         </div>
         <div>
-          <label className="label">Key rotation remind (days)</label>
+          <label className="label">Trial period time (days)</label>
           <input
             className="input"
             type="number"

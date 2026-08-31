@@ -30,13 +30,13 @@ export default function AcceptInvite() {
     e.preventDefault();
     setError("");
     if (!acceptTerms) {
-      setError("You must accept the Terms & Conditions to create an account");
+      setError("You must accept the Terms & Conditions");
       return;
     }
     try {
       const { data } = await api.post("/api/admin/invitations/accept", {
         token,
-        password,
+        password: password || undefined,
         name,
         acceptTerms: true,
       });
@@ -49,7 +49,9 @@ export default function AcceptInvite() {
         navigate("/");
       } else {
         setError(
-          "Account created. Open the SecureDocShare extension to log in and decrypt mail.",
+          data.isExistingUser
+            ? "Invitation accepted! You have been added to the group."
+            : "Account created. Open the SecureDocShare extension to log in and decrypt mail.",
         );
       }
     } catch (err) {
@@ -61,12 +63,27 @@ export default function AcceptInvite() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="card w-full max-w-md p-8">
         <p className="font-display text-2xl font-bold">SecureDocShare</p>
-        <h1 className="mt-2 text-lg font-semibold">Accept invitation</h1>
+        <h1 className="mt-2 text-lg font-semibold">
+          {preview?.isExistingUser ? "Join group invitation" : "Accept invitation"}
+        </h1>
         {preview && (
-          <p className="mt-1 text-sm text-ink-500">
-            {preview.email} · {preview.role} · {preview.trialDays || 90}-day
-            subscription
-          </p>
+          <div className="mt-2 rounded-lg bg-ink-50/80 p-3 text-xs text-ink-600 space-y-1 border border-ink-100">
+            <p><strong>Email:</strong> {preview.email}</p>
+            <p><strong>Role:</strong> <span className="capitalize">{preview.role?.replace(/_/g, " ")}</span></p>
+            {preview.groupName && <p><strong>Group:</strong> {preview.groupName}</p>}
+            {preview.isExistingUser ? (
+              <p className="text-teal-700 font-medium pt-1">
+                You have an existing account. Accepting will add your account to this group.
+              </p>
+            ) : (
+              <p className="text-ink-500 pt-1">
+                New accounts receive a {preview.trialDays || 90}-day subscription.
+              </p>
+            )}
+            <p className="text-amber-700 font-medium text-[11px] pt-1">
+              Valid for 24 hours only.
+            </p>
+          </div>
         )}
 
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
@@ -76,17 +93,23 @@ export default function AcceptInvite() {
               className="input"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. John Doe"
             />
           </div>
           <div>
-            <label className="label">Password (12+ characters)</label>
+            <label className="label">
+              {preview?.isExistingUser
+                ? "Update password (optional — 12+ characters)"
+                : "Password (12+ characters)"}
+            </label>
             <input
               className="input"
               type="password"
               minLength={12}
-              required
+              required={!preview?.isExistingUser}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder={preview?.isExistingUser ? "Leave blank to keep current password" : "Create strong password"}
             />
           </div>
           <TermsCheckbox
@@ -104,7 +127,7 @@ export default function AcceptInvite() {
             className="btn-primary w-full"
             disabled={!preview || !acceptTerms}
           >
-            Create account
+            {preview?.isExistingUser ? "Join group & Accept" : "Create account"}
           </button>
         </form>
       </div>

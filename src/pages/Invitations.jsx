@@ -53,9 +53,13 @@ export default function Invitations() {
         <h1 className="font-display text-2xl font-bold">Invitations</h1>
         {trialDays ? (
           <p className="mt-1 text-sm text-ink-500">
-            New accounts get a {trialDays}-day subscription period.
+            New accounts get a {trialDays}-day subscription period. Invitation links are valid for 24 hours.
           </p>
-        ) : null}
+        ) : (
+          <p className="mt-1 text-sm text-ink-500">
+            Invitation links are valid for 24 hours.
+          </p>
+        )}
         {isSuperAdmin ? (
           <p className="mt-1 text-sm text-ink-500">
             Only super admin can invite resellers.
@@ -124,8 +128,13 @@ export default function Invitations() {
 
       {lastInvite?.inviteUrl && (
         <div className="card mb-6 border-accent/30 bg-accent-soft/40 p-4 text-sm">
-          <p className="font-semibold text-accent-dark">Invite link (copy once)</p>
-          <p className="mt-2 break-all">{lastInvite.inviteUrl}</p>
+          <p className="font-semibold text-accent-dark">Invite link generated (valid for 24 hours)</p>
+          <p className="mt-1 text-xs text-ink-600">
+            An email invitation was dispatched. You can also copy the link directly:
+          </p>
+          <p className="mt-2 break-all font-mono text-xs bg-white/80 p-2 rounded border border-accent/20 select-all">
+            {lastInvite.inviteUrl}
+          </p>
         </div>
       )}
 

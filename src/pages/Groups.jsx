@@ -2,6 +2,114 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth.jsx";
 import { api, errMessage } from "../lib/api";
 import ScopedPeopleList from "../components/ScopedPeopleList.jsx";
+import TransferGroupAdminModal from "../components/TransferGroupAdminModal.jsx";
+
+function EditGroupModal({ group, onClose, onSaved }) {
+  const [name, setName] = useState(group?.name || "");
+  const [description, setDescription] = useState(group?.description || "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!group) return null;
+
+  async function handleSave(e) {
+    e.preventDefault();
+    const trimmedName = name.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setError("Group name must be at least 2 characters");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const { data } = await api.patch(`/api/admin/groups/${group.uuid}`, {
+        name: trimmedName,
+        description: description.trim(),
+      });
+      onSaved(data.group);
+      onClose();
+    } catch (err) {
+      setError(errMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/50 p-4 backdrop-blur-sm">
+      <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
+      <div className="relative card max-h-[90vh] w-full max-w-md overflow-y-auto p-6 shadow-lift">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="font-display text-xl font-bold">Edit group</h2>
+            <p className="mt-1 text-sm text-ink-500">
+              {group.adminEmail ? `Admin: ${group.adminEmail}` : "Update group details"}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary !px-2 !py-1 text-xs"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="label" htmlFor="edit-group-name">
+              Group name
+            </label>
+            <input
+              id="edit-group-name"
+              className="input"
+              required
+              minLength={2}
+              maxLength={120}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Acme Legal"
+            />
+          </div>
+
+          <div>
+            <label className="label" htmlFor="edit-group-description">
+              Description (optional)
+            </label>
+            <textarea
+              id="edit-group-description"
+              className="input min-h-[80px]"
+              maxLength={500}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Group description..."
+            />
+          </div>
+
+          {error && (
+            <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-danger">
+              {error}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onClose}
+              disabled={busy}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary" disabled={busy}>
+              {busy ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 export default function Groups() {
   const { user } = useAuth();
@@ -9,8 +117,16 @@ export default function Groups() {
   const isGroupAdmin = user?.role === "group_admin";
   const canCreate =
     user?.role === "reseller" || user?.role === "super_admin";
+  const canDelete =
+    user?.role === "reseller" || user?.role === "super_admin";
+  const canManageAny =
+    user?.role === "super_admin" ||
+    user?.role === "reseller" ||
+    user?.role === "group_admin";
 
   const [groups, setGroups] = useState([]);
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [transferGroup, setTransferGroup] = useState(null);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(true);
@@ -193,7 +309,8 @@ export default function Groups() {
                   <th className="px-2 py-2 font-semibold">Group</th>
                   <th className="px-2 py-2 font-semibold">Admin</th>
                   <th className="px-2 py-2 font-semibold">Created</th>
-                  {canCreate ? (
+                  <th className="px-2 py-2 font-semibold">Expires</th>
+                  {canManageAny ? (
                     <th className="px-2 py-2 font-semibold">Actions</th>
                   ) : null}
                 </tr>
@@ -215,23 +332,50 @@ export default function Groups() {
                         ? new Date(g.createdAt).toLocaleDateString()
                         : "—"}
                     </td>
-                    {canCreate ? (
+                    <td className="px-2 py-3">
+                      {g.expiresAt ? (
+                        <span
+                          className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+                            new Date(g.expiresAt).getTime() > Date.now()
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-rose-50 text-rose-700 font-semibold"
+                          }`}
+                        >
+                          {new Date(g.expiresAt).toLocaleDateString()}
+                        </span>
+                      ) : (
+                        <span className="text-ink-400 text-xs">—</span>
+                      )}
+                    </td>
+                    {canManageAny ? (
                       <td className="px-2 py-3">
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
                             className="text-sm font-semibold text-accent hover:underline"
-                            onClick={() => onRename(g)}
+                            onClick={() => setEditingGroup(g)}
                           >
-                            Rename
+                            Edit
                           </button>
-                          <button
-                            type="button"
-                            className="text-sm font-semibold text-danger hover:underline"
-                            onClick={() => onDelete(g.uuid)}
-                          >
-                            Delete
-                          </button>
+                          {canDelete ? (
+                            <>
+                              <button
+                                type="button"
+                                className="text-sm font-semibold text-teal-600 hover:underline"
+                                title="Transfer group admin to another member and demote current admin to subscriber"
+                                onClick={() => setTransferGroup(g)}
+                              >
+                                Change Admin
+                              </button>
+                              <button
+                                type="button"
+                                className="text-sm font-semibold text-danger hover:underline"
+                                onClick={() => onDelete(g.uuid)}
+                              >
+                                Delete
+                              </button>
+                            </>
+                          ) : null}
                         </div>
                       </td>
                     ) : null}
@@ -242,6 +386,32 @@ export default function Groups() {
           </div>
         )}
       </section>
+
+      {editingGroup && (
+        <EditGroupModal
+          group={editingGroup}
+          onClose={() => setEditingGroup(null)}
+          onSaved={(updated) => {
+            setInfo(`Group “${updated.name}” updated successfully.`);
+            load();
+          }}
+        />
+      )}
+
+      {transferGroup && (
+        <TransferGroupAdminModal
+          group={transferGroup}
+          onClose={() => setTransferGroup(null)}
+          onTransferred={(res) => {
+            setInfo(res?.message || "Group admin transferred successfully.");
+            load();
+          }}
+          onDeletedWithoutTransfer={() => {
+            setInfo("Group deleted.");
+            load();
+          }}
+        />
+      )}
 
       <ScopedPeopleList
         title="Group admins"

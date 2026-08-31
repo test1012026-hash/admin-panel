@@ -3,6 +3,7 @@ import { api, errMessage } from "../lib/api";
 import { useAuth } from "../lib/auth.jsx";
 import { formatRole } from "../lib/format";
 import UserManageModal from "./UserManageModal.jsx";
+import TransferGroupAdminModal from "./TransferGroupAdminModal.jsx";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 const DEFAULT_PAGE_SIZE = 20;
@@ -51,6 +52,7 @@ export default function ScopedPeopleList({
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState("");
   const [viewUser, setViewUser] = useState(null);
+  const [transferAdminUser, setTransferAdminUser] = useState(null);
 
   const canManage =
     user?.role === "super_admin" ||
@@ -132,6 +134,38 @@ export default function ScopedPeopleList({
     } finally {
       setBusy("");
     }
+  }
+
+  async function removeFromGroup(u) {
+    const email = u.email || "this user";
+    if (
+      !confirm(
+        `Remove ${email} from their group?\n\nThey will become an independent user and will no longer be linked to any group.`,
+      )
+    ) {
+      return;
+    }
+    setBusy(u.uuid + "remove-group");
+    setError("");
+    try {
+      await api.post(`/api/admin/users/${u.uuid}/remove-from-group`);
+      if (viewUser?.uuid === u.uuid) {
+        setViewUser(null);
+      }
+      await load();
+    } catch (err) {
+      setError(errMessage(err));
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function handleDeleteUser(u) {
+    if (u.role === "group_admin" && (user?.role === "super_admin" || user?.role === "reseller")) {
+      setTransferAdminUser(u);
+      return;
+    }
+    softDelete(u.uuid);
   }
 
   async function softDelete(uuid) {
@@ -342,11 +376,33 @@ export default function ScopedPeopleList({
                           Block
                         </button>
                       )}
+                      {u.role === "group_admin" && (user?.role === "super_admin" || user?.role === "reseller") ? (
+                        <button
+                          type="button"
+                          className="btn-secondary !px-2 !py-1 text-xs font-semibold text-teal-700"
+                          title="Transfer group admin role to another member"
+                          disabled={busy.startsWith(u.uuid)}
+                          onClick={() => setTransferAdminUser(u)}
+                        >
+                          Change Admin
+                        </button>
+                      ) : null}
+                      {(u.groupAdminUuid || u.groupUuid || u.parentUuid) ? (
+                        <button
+                          type="button"
+                          className="rounded-lg bg-red-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+                          title="Remove from group"
+                          disabled={busy.startsWith(u.uuid)}
+                          onClick={() => removeFromGroup(u)}
+                        >
+                          Remove Group
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         className="btn-danger !px-2 !py-1 text-xs"
                         disabled={busy.startsWith(u.uuid)}
-                        onClick={() => softDelete(u.uuid)}
+                        onClick={() => handleDeleteUser(u)}
                       >
                         Delete
                       </button>
@@ -433,6 +489,19 @@ export default function ScopedPeopleList({
           onClose={() => setViewUser(null)}
           onSaved={(updated) => {
             setViewUser(updated);
+            load();
+          }}
+        />
+      ) : null}
+
+      {transferAdminUser ? (
+        <TransferGroupAdminModal
+          user={transferAdminUser}
+          onClose={() => setTransferAdminUser(null)}
+          onTransferred={() => {
+            load();
+          }}
+          onDeletedWithoutTransfer={() => {
             load();
           }}
         />

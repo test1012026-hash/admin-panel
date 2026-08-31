@@ -19,6 +19,7 @@ function buildFormFromUser(user) {
       country: "",
       company: "",
       role: "subscriber",
+      groupName: "",
       subscriptionExpiresAt: "",
     };
   }
@@ -28,6 +29,7 @@ function buildFormFromUser(user) {
     country: user.country ?? "",
     company: user.company ?? "",
     role: user.role || "subscriber",
+    groupName: "",
     subscriptionExpiresAt: toDatetimeLocalValue(user.subscriptionExpiresAt),
   };
 }
@@ -52,6 +54,20 @@ export default function UserManageModal({
     setForm(buildFormFromUser(user));
     setError("");
     setMessage("");
+
+    if (user.role === "group_admin" || user.groupUuid) {
+      api
+        .get("/api/admin/groups")
+        .then((res) => {
+          const matching = (res.data.groups || []).find(
+            (g) => g.adminUuid === user.uuid || g.uuid === user.groupUuid,
+          );
+          if (matching?.name) {
+            setForm((prev) => ({ ...prev, groupName: matching.name }));
+          }
+        })
+        .catch(() => {});
+    }
   }, [user]);
 
   if (!user) return null;
@@ -68,8 +84,11 @@ export default function UserManageModal({
         country: form.country,
         company: form.company,
       };
-      if (canEditRole && form.role && form.role !== user.role) {
+      if (canEditRole && form.role) {
         body.role = form.role;
+        if (form.role === "group_admin") {
+          body.groupName = form.groupName || "";
+        }
       }
       if (canEditSubscription) {
         body.subscriptionExpiresAt = form.subscriptionExpiresAt
@@ -78,6 +97,29 @@ export default function UserManageModal({
       }
       const { data } = await api.patch(`/api/admin/users/${user.uuid}`, body);
       setMessage("User updated");
+      onSaved?.(data.user);
+    } catch (err) {
+      setError(errMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleRemoveFromGroup() {
+    const email = user.email || "this user";
+    if (
+      !confirm(
+        `Remove ${email} from their group?\n\nThey will become an independent user and will no longer be linked to any group.`,
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const { data } = await api.post(`/api/admin/users/${user.uuid}/remove-from-group`);
+      setMessage("User removed from group and is now an independent user.");
       onSaved?.(data.user);
     } catch (err) {
       setError(errMessage(err));
@@ -135,6 +177,26 @@ export default function UserManageModal({
               />
             )}
           </div>
+          {form.role === "group_admin" && (
+            <div>
+              <label className="label" htmlFor="edit-group-name">
+                Group name
+              </label>
+              <input
+                id="edit-group-name"
+                className="input"
+                maxLength={120}
+                placeholder="e.g. Acme Team (leave blank for random 6-character name)"
+                value={form.groupName || ""}
+                onChange={(e) =>
+                  setForm({ ...form, groupName: e.target.value })
+                }
+              />
+              <p className="mt-1 text-xs text-ink-500">
+                If left blank, a random 6-character group name will be created automatically.
+              </p>
+            </div>
+          )}
           {["name", "phone", "country", "company"].map((key) => (
             <div key={key}>
               <label className="label" htmlFor={`edit-${key}`}>
@@ -186,13 +248,27 @@ export default function UserManageModal({
             </p>
           ) : null}
 
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary" disabled={busy}>
-              {busy ? "Saving…" : "Save changes"}
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+            <div>
+              {(user.groupAdminUuid || user.groupUuid || user.parentUuid) ? (
+                <button
+                  type="button"
+                  className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50"
+                  disabled={busy}
+                  onClick={handleRemoveFromGroup}
+                >
+                  Remove from group
+                </button>
+              ) : null}
+            </div>
+            <div className="flex gap-2">
+              <button type="button" className="btn-secondary" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary" disabled={busy}>
+                {busy ? "Saving…" : "Save changes"}
+              </button>
+            </div>
           </div>
         </form>
       </div>

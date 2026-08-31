@@ -208,7 +208,7 @@ export default function Profile() {
         </a>
       </section>
 
-      <section className="card space-y-3 p-5 stagger-3 page-enter">
+      {/* <section className="card space-y-3 p-5 stagger-3 page-enter">
         <h2 className="font-display text-lg font-semibold">
           Chrome extension
         </h2>
@@ -238,7 +238,7 @@ export default function Profile() {
         >
           Download Chrome extension (.zip)
         </a>
-      </section>
+      </section> */}
 
       <form
         className="card space-y-3 p-5 stagger-4 page-enter"
