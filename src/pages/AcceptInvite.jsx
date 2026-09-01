@@ -46,7 +46,7 @@ export default function AcceptInvite() {
         )
       ) {
         await refreshMe();
-        navigate("/");
+        navigate(data?.user?.role === "subscriber" ? "/profile" : "/dashboard");
       } else {
         setError(
           data.isExistingUser

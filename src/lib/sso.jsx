@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const SSO_PROVIDER_META = {
   google: {
     label: "Continue with Google",
@@ -54,7 +56,7 @@ export const SSO_PROVIDER_META = {
 
 export function startAdminSso(provider, { intent = "login", acceptTerms = false } = {}) {
   const returnOrigin = window.location.origin;
-  const returnPath = "/";
+  const returnPath = window.location.pathname || "/login";
   const params = new URLSearchParams({
     returnOrigin,
     returnPath,
@@ -95,14 +97,9 @@ export function TermsCheckbox({ checked, onChange, id = "accept-terms" }) {
       />
       <span>
         I agree to the{" "}
-        <a
-          href="https://securedocs.share/terms"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-accent hover:underline"
-        >
+        <Link to="/terms" className="font-semibold text-accent hover:underline">
           Terms &amp; Conditions
-        </a>{" "}
+        </Link>{" "}
         <span className="text-danger">*</span>
       </span>
     </label>

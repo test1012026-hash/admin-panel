@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../lib/auth.jsx";
 import { api, errMessage } from "../lib/api";
 import { SSO_PROVIDER_META, startAdminSso } from "../lib/sso.jsx";
+import PublicMarketingLinks from "../components/PublicMarketingLinks.jsx";
 
 export default function Login() {
   const {
@@ -20,7 +21,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [providers, setProviders] = useState([]);
   const [ssoBusy, setSsoBusy] = useState("");
-  const homePath = user?.role === "subscriber" ? "/profile" : "/";
+  const homePath = user?.role === "subscriber" ? "/profile" : "/dashboard";
   const busy = loading || Boolean(ssoBusy);
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export default function Login() {
             ? "/onboarding"
             : data?.user?.role === "subscriber"
               ? "/profile"
-              : "/",
+              : "/dashboard",
           {
           replace: true,
         });
@@ -99,7 +100,7 @@ export default function Login() {
           ? "/onboarding"
           : data?.user?.role === "subscriber"
             ? "/profile"
-            : "/",
+            : "/dashboard",
       );
     } catch (err) {
       setError(errMessage(err));
@@ -125,14 +126,16 @@ export default function Login() {
 
       <div className="card page-enter relative w-full max-w-md overflow-hidden p-8 shadow-lift">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/30">
-            <span className="font-display text-sm font-bold">SD</span>
-          </div>
-          <div>
-            <p className="font-display text-xl font-bold text-ink-950">
-              SecureDocShare
-            </p>
-          </div>
+          <Link to="/" className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/30">
+              <span className="font-display text-sm font-bold">SD</span>
+            </div>
+            <div>
+              <p className="font-display text-xl font-bold text-ink-950">
+                SecureDocShare
+              </p>
+            </div>
+          </Link>
         </div>
 
         <h1 className="text-lg font-semibold text-ink-800">Welcome back</h1>
@@ -218,6 +221,7 @@ export default function Login() {
             Sign up
           </Link>
         </p>
+        <PublicMarketingLinks />
       </div>
     </div>
   );

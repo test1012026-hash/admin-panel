@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./lib/auth.jsx";
 import Layout from "./components/Layout.jsx";
+import PublicLayout from "./components/PublicLayout.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Onboarding from "./pages/Onboarding.jsx";
@@ -13,6 +14,11 @@ import Profile from "./pages/Profile.jsx";
 import Subscribers from "./pages/Subscribers.jsx";
 import Groups from "./pages/Groups.jsx";
 import Resellers from "./pages/Resellers.jsx";
+import MarketingHome from "./pages/marketing/Home.jsx";
+import MarketingTerms from "./pages/marketing/Terms.jsx";
+import MarketingSecurity from "./pages/marketing/Security.jsx";
+import MarketingSolutions from "./pages/marketing/Solutions.jsx";
+import MarketingPricing from "./pages/marketing/Pricing.jsx";
 
 function PrivateRoute({ children }) {
   const { isAuthenticated, bootstrapping, user } = useAuth();
@@ -35,7 +41,7 @@ function SuperAdminOnly({ children }) {
   if (user?.role !== "super_admin") {
     return (
       <Navigate
-        to={user?.role === "subscriber" ? "/profile" : "/"}
+        to={user?.role === "subscriber" ? "/profile" : "/dashboard"}
         replace
       />
     );
@@ -53,10 +59,25 @@ function StaffOnly({ children }) {
 }
 
 function homeForUser(user) {
-  if (!user) return "/login";
+  if (!user) return "/";
   if (user.needsOnboarding) return "/onboarding";
   if (user.role === "subscriber") return "/profile";
-  return "/";
+  return "/dashboard";
+}
+
+function PublicHome() {
+  const { isAuthenticated, bootstrapping, user } = useAuth();
+  if (bootstrapping) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-ink-500">
+        Loading…
+      </div>
+    );
+  }
+  if (isAuthenticated) {
+    return <Navigate to={homeForUser(user)} replace />;
+  }
+  return <MarketingHome />;
 }
 
 export { homeForUser };
@@ -64,12 +85,19 @@ export { homeForUser };
 export default function App() {
   return (
     <Routes>
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<PublicHome />} />
+        <Route path="/overview" element={<Navigate to="/" replace />} />
+        <Route path="/solutions" element={<MarketingSolutions />} />
+        <Route path="/security" element={<MarketingSecurity />} />
+        <Route path="/pricing" element={<MarketingPricing />} />
+        <Route path="/terms" element={<MarketingTerms />} />
+      </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/accept-invite" element={<AcceptInvite />} />
       <Route path="/onboarding" element={<Onboarding />} />
       <Route
-        path="/"
         element={
           <PrivateRoute>
             <Layout />
@@ -77,7 +105,7 @@ export default function App() {
         }
       >
         <Route
-          index
+          path="/dashboard"
           element={
             <StaffOnly>
               <Dashboard />
@@ -85,7 +113,7 @@ export default function App() {
           }
         />
         <Route
-          path="subscribers"
+          path="/subscribers"
           element={
             <StaffOnly>
               <Subscribers />
@@ -93,7 +121,7 @@ export default function App() {
           }
         />
         <Route
-          path="resellers"
+          path="/resellers"
           element={
             <SuperAdminOnly>
               <Resellers />
@@ -101,7 +129,7 @@ export default function App() {
           }
         />
         <Route
-          path="groups"
+          path="/groups"
           element={
             <StaffOnly>
               <Groups />
@@ -109,7 +137,7 @@ export default function App() {
           }
         />
         <Route
-          path="invitations"
+          path="/invitations"
           element={
             <StaffOnly>
               <Invitations />
@@ -117,7 +145,7 @@ export default function App() {
           }
         />
         <Route
-          path="activity"
+          path="/activity"
           element={
             <StaffOnly>
               <Activity />
@@ -125,14 +153,14 @@ export default function App() {
           }
         />
         <Route
-          path="settings"
+          path="/settings"
           element={
             <SuperAdminOnly>
               <Settings />
             </SuperAdminOnly>
           }
         />
-        <Route path="profile" element={<Profile />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

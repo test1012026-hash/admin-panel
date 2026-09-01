@@ -7,6 +7,7 @@ import {
   startAdminSso,
   TermsCheckbox,
 } from "../lib/sso.jsx";
+import PublicMarketingLinks from "../components/PublicMarketingLinks.jsx";
 
 export default function Signup() {
   const {
@@ -30,7 +31,7 @@ export default function Signup() {
   const [providers, setProviders] = useState([]);
   const [ssoBusy, setSsoBusy] = useState("");
 
-  const homePath = user?.role === "subscriber" ? "/profile" : "/";
+  const homePath = user?.role === "subscriber" ? "/profile" : "/dashboard";
   const termsBlocked = !acceptTerms;
   const busy = loading || Boolean(ssoBusy);
 
@@ -67,7 +68,7 @@ export default function Signup() {
             ? "/onboarding"
             : data?.user?.role === "subscriber"
               ? "/profile"
-              : "/",
+              : "/dashboard",
           { replace: true },
         );
       } catch (err) {
@@ -137,7 +138,7 @@ export default function Signup() {
           ? "/onboarding"
           : data?.user?.role === "subscriber"
             ? "/profile"
-            : "/",
+            : "/dashboard",
       );
     } catch (err) {
       setError(errMessage(err));
@@ -181,14 +182,16 @@ export default function Signup() {
 
       <div className="card page-enter relative w-full max-w-md overflow-hidden p-8 shadow-lift">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/30">
-            <span className="font-display text-sm font-bold">SD</span>
-          </div>
-          <div>
-            <p className="font-display text-xl font-bold text-ink-950">
-              SecureDocShare
-            </p>
-          </div>
+          <Link to="/" className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-white shadow-md shadow-accent/30">
+              <span className="font-display text-sm font-bold">SD</span>
+            </div>
+            <div>
+              <p className="font-display text-xl font-bold text-ink-950">
+                SecureDocShare
+              </p>
+            </div>
+          </Link>
         </div>
 
         <h1 className="text-lg font-semibold text-ink-800">Sign up</h1>
@@ -350,6 +353,7 @@ export default function Signup() {
             Log in
           </Link>
         </p>
+        <PublicMarketingLinks />
       </div>
     </div>
   );

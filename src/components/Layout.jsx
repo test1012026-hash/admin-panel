@@ -4,7 +4,7 @@ import { formatRole } from "../lib/format.js";
 
 const ALL_LINKS = [
   {
-    to: "/",
+    to: "/dashboard",
     label: "Dashboard",
     end: true,
     roles: ["super_admin", "reseller", "group_admin"],
@@ -124,7 +124,7 @@ export default function Layout() {
 
   async function signOut() {
     await logout();
-    navigate("/login");
+    navigate("/");
   }
 
   return (

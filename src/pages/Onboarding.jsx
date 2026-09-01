@@ -26,7 +26,7 @@ export default function Onboarding() {
   if (!user?.needsOnboarding) {
     return (
       <Navigate
-        to={user?.role === "subscriber" ? "/profile" : "/"}
+        to={user?.role === "subscriber" ? "/profile" : "/dashboard"}
         replace
       />
     );
@@ -58,7 +58,7 @@ export default function Onboarding() {
     try {
       await api.post("/api/admin/auth/onboarding/create-group", { name });
       await refreshMe();
-      navigate("/", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(errMessage(err));
     } finally {
